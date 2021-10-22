@@ -62,15 +62,15 @@ class Timer
   private:
     AtoAwcUtil *_atoAwcUtil;
     bool leapYear = false;
-    int spiffsLReset;
-    int spiffsHWReset;
-    int spiffsLWReset;
-    int spiffsAtoReset;
-    int spiffsAwcReset;
-    int spiffsHbReset;
-    int spiffsBdReset;
-    int spiffsGdReset;
-    int spiffsYdReset;
+    int spiffsLReset = 1;
+    int spiffsHWReset = 1;
+    int spiffsLWReset = 1;
+    int spiffsAtoReset = 1;
+    int spiffsAwcReset = 1;
+    int spiffsHbReset = 1;
+    int spiffsBdReset = 1;
+    int spiffsGdReset = 1;
+    int spiffsYdReset = 1;
   bool sentPrintOnceLN = false;
    bool sentPrintOnceHW = false;
    bool sentPrintOnceLW = false;

@@ -3,6 +3,15 @@
 Timer::Timer(AtoAwcUtil *atoAwcUtil)
 {
   _atoAwcUtil = atoAwcUtil;
+    spiffsLReset = 1;
+    spiffsHWReset = 1;
+    spiffsLWReset = 1;
+    spiffsAtoReset = 1;
+    spiffsAwcReset = 1;
+    spiffsHbReset = 1;
+    spiffsBdReset = 1;
+    spiffsGdReset = 1;
+    spiffsYdReset = 1;
   Serial.begin(115200);
 }
 
@@ -19,6 +28,11 @@ Timer::Timer(AtoAwcUtil *atoAwcUtil)
 //                   leak,high water, low water, ato, awc     //
   //////////////////////////////////////////////////////////////
   bool Timer::execute(String nextType){
+    if(nextType == "atoNot"){
+      //Serial.println("IN ATONOT");
+    }
+    //Serial.print("timer.executing :");
+    //Serial.println(nextType);
 /// boolean execute(String nextType){
     boolean retVal = false;
     //setUtcOffsetInSeconds(0);
@@ -39,6 +53,8 @@ Timer::Timer(AtoAwcUtil *atoAwcUtil)
     const char *filename = "";;//const char *file_ato = "";
 ///   String filename = "";
     String curTime = arrToString(currentTimeArr);
+    //Serial.print("----------------------------------------------- current time is :");
+    //Serial.println(curTime);
     // ////System.out.println("current time is "+curTime);
     //Web////System.out.print("CT "+curTime+",");
     //NEEDED TO put a one min buffer either way in
@@ -103,6 +119,7 @@ Timer::Timer(AtoAwcUtil *atoAwcUtil)
         }
       }
     }else if(nextType == "atoNot"){
+      //Serial.println("IN ATONOT 2");
       spiffsXReset = spiffsAtoReset;
       notification = "atoNot";
       webSerialCode = "ATON";
@@ -110,8 +127,13 @@ Timer::Timer(AtoAwcUtil *atoAwcUtil)
       strArr = _atoAwcUtil->readFile(SPIFFS, filename);//read leakNext time from memory
 ///     strArr = _atoAwcUtil.readFile("SPIFFS", filename);//read leakNext time from memory
 //      System.out.println("strArr in ato form spiffs is : "+strArr);
+      //Serial.print("strArr in ato form spiffs is : ");
+      //Serial.println(strArr);
+      //Serial.print("ato filename is ");
+      //Serial.println(filename);
       if(strArr != ""){
 /*///        atoNextArr = */tokenizeNextTime(strArr, atoNextArr); //put atoArr in leakNextArr
+      //Serial.println("In strArr not nil ");
         for(int i = 0;i<5;i++){
           nextArr[i] = atoNextArr[i];
          //////System.out.println("nextArr in loop for ato is "+nextArr[i]);
@@ -200,18 +222,19 @@ Timer::Timer(AtoAwcUtil *atoAwcUtil)
            //Web//System.out.print(web//System.outCode+":"+next+",");//TODO add notification to print so we know what it is aot or awc or hb, etc
 
 
-     strArr = _atoAwcUtil->readFile(SPIFFS, filename);//read Next time from memory
+     //strArr = _atoAwcUtil->readFile(SPIFFS, filename);//read Next time from memory
 ///    strArr = _atoAwcUtil.readFile("SPIFFS", filename);//read Next time from memory
     
       ////System.out.print("from save file is : "+strArr);
       ////System.out.print(" for filename :");
       ////System.out.println(filename);
       if(spiffsXReset == 1){  //FIRST TIME THROUGH OR A RESET HAPPENED (1)
+        //Serial.println("IN ATONOT SPIFFX = 1");
         ////System.out.println("next spiffs time is reset 1");
         //Web//System.out.print("?R,");
-        
+        //Serial.println("not is spiffsXReset = 1");
         if(notification == "leakNot"){
-          spiffsLReset =0;
+          spiffsLReset = 0;
         }else if(notification == "highWaterNot"){
           spiffsHWReset = 0;
           ////System.out.println("just set reset  0000000000000000000000000000");
@@ -219,8 +242,10 @@ Timer::Timer(AtoAwcUtil *atoAwcUtil)
           spiffsLWReset = 0;
           ////System.out.println("just set reset  0000000000000000000000000000");
         }else if(notification == "atoNot"){
+          //Serial.println("IN ATONOT 3");
           spiffsAtoReset = 0;
           ////System.out.println("just set reset  0000000000000000000000000000");
+          //Serial.println("just set reset atoNot 0000000000000000000000000000000");
         }else if(notification == "awcNot"){
           spiffsAwcReset = 0;
           ////System.out.println("just set reset  0000000000000000000000000000");
@@ -237,22 +262,41 @@ Timer::Timer(AtoAwcUtil *atoAwcUtil)
           spiffsYdReset = 0;
           ////System.out.println("just set reset  0000000000000000000000000000");
         }    
-        
+       //Serial.print("strArr for : ");
+       //Serial.print(notification);
+       //Serial.print(" is : ");
+       //Serial.println(strArr); 
+       if(strArr == ""){
+        //Serial.println("strArr is blank");
+       }else{
+        //Serial.println("strArr isn't blank");
+       }
       if(strArr == ""){  //THIS IS FIRST TIME THRU (1.1) CALC/SAVE RETURN FALSE MOVE ON 
           //Serial.println("no spiffs\:");
           //Web//System.out.print("?ES,");
           strTime = calcNextTime(notification,curTime); // put in addArr
            ////System.out.println("next calc time is : "+strTime);
-          saveNextTime(notification,strTime);
+           if(strTime != ""){
+              saveNextTime(notification,strTime);
+           }else{
+            //Serial.println("Error in timer strTime is blank");
+           }
           ////System.out.println("saved : "+strTime+" and returned false");
+          //Serial.print("saved next time for : ");
+          //Serial.print(notification);
+          //Serial.print(" is :");
+          //Serial.println(strTime);
           //System.out.print("1-1, ");
           return false;
         }else if(isSavedTimeGreaterThanCurTime(strArr) == "<" ){  //1ST TIME THRU.  A RESET!!!!CALC/SAVE
                                                             //HAS THE SYSTEM BEEN OFF SO LONG THE SAVED VALUE HAS PASSED
                                                             //CALC/SAVE MOVE ON...PRETTY MUCH HAVE TO START OVER RESTURN FALSE
+          //Serial.println("i should have landed here");
           strTime = calcNextTime(notification,curTime); // put in addArr
           ////System.out.println("First time thru Not in blank and save time greater than strArr and TOKENIZE strArr**** and return falseand strArr is "+strArr);
           saveNextTime(notification,strTime);
+          //Serial.print("should have saved strTime ");
+          //Serial.println(strTime);
           //Web//System.out.print("#STNG_B,");
           //System.out.print("1-2, ");
           return false;
@@ -266,6 +310,7 @@ Timer::Timer(AtoAwcUtil *atoAwcUtil)
           saveNextTime(notification,strTime);    
           ////System.out.println("Not in blank and nextArr == curTime and next cal time is strTime is "+strTime+" and return true");
           //System.out.print("1-3, ");
+          //Serial.print("1-3___________________________, ");
           return true;
         }else{  //A RESET.  SYSTEM HASN'T BEEN OFF TOO LONG AND SAVED NOT EQUAL SO SIMPLY RETURN FALSE
            //System.out.print("1-4, ");
@@ -305,7 +350,7 @@ Timer::Timer(AtoAwcUtil *atoAwcUtil)
   void Timer::setCurrentTime(){
     //int i = 0;
   currentTimeArr = _atoAwcUtil->setCurrentTime();
-/*    Serial.print("current year in timer is :");
+/*    //Serial.print("current year in timer is :");
     Serial.print(currentTimeArr[0]);
     Serial.print(", current month in timer is :");
     Serial.print(currentTimeArr[1]);
@@ -505,6 +550,8 @@ Timer::Timer(AtoAwcUtil *atoAwcUtil)
       //////System.out.print("ato filename from web is : ");
       //////System.out.println(fileVal);
     }else if (nextType == "lowWaterNot"){
+      //Serial.print("nextType in lowWaternot is :");
+      //Serial.println(nextType);
       fileVal = _atoAwcUtil->readFile(SPIFFS, "/lwnotfreq.txt");
 ///     fileVal = _atoAwcUtil.readFile("SPIFFS", "/lwnotfreq.txt");
       //////System.out.print("filename from web is : ");
@@ -514,6 +561,10 @@ Timer::Timer(AtoAwcUtil *atoAwcUtil)
 ///     fileVal = _atoAwcUtil.readFile("SPIFFS", "/atofreq.txt");
       //////System.out.print("filename from web is : ");
       //////System.out.println(fileVal);
+      //Serial.print("nextType in atonot is :");
+      //Serial.println(nextType);
+      //Serial.print("/atofreq.txt is : ");
+      //Serial.println(fileVal);
     }else if (nextType == "awcNot"){
       fileVal = _atoAwcUtil->readFile(SPIFFS, "/awcfreq.txt");
 ///     fileVal = _atoAwcUtil.readFile("SPIFFS", "/awcfreq.txt");
@@ -542,6 +593,7 @@ Timer::Timer(AtoAwcUtil *atoAwcUtil)
    }
     if(fileVal == ""){
       fileVal = "4hour";
+      //Serial.println("we are in default 4hour in timer");
     }
     //Serial.println("before convertWebTimeToStrArr() in calc");
     timeArr = convertWebTimeToStrArr(fileVal);
@@ -570,6 +622,7 @@ Timer::Timer(AtoAwcUtil *atoAwcUtil)
   String Timer::convertWebTimeToStrArr(String input){
 /// String convertWebTimeToStrArr(String input){
     if(input == "always"){
+      //Serial.println("we are in always in timer");
       return"0,0,0,0,5";
     }
     if(input == "twiceaday"){
