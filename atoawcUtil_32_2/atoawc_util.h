@@ -10,28 +10,27 @@
 
 #include "Arduino.h"
 #include <FS.h>
-/*#ifndef WebSerial_h
-#include "WebSerial.h"
-#endif */
 
 
 
-#include <DNSServer.h>
+
 //#include <DNSServer.h>
-#include <WiFi.h>
+//#include <DNSServer.h>
+//#include <WiFi.h>
 #include <Wire.h>
 #include <ArduinoJson.h>
 //#include "ESPAsyncWebServer.h"
-#include <NTPClient.h>
+//#include <NTPClient.h>
 #include "SPIFFS.h"
 #include "datetime.h"
+#include <WebSerial.h>
 
 //#include <ESP8266mDNS.h>
 
 class AtoAwcUtil
 {
   public:
-    AtoAwcUtil();
+    AtoAwcUtil(AsyncWebServer *server);
     float recordRun(String whatsRunning, bool startIt);
     void storeFillTime(String type, float fillTime);
     String readFile(fs::FS &fs, const char * path);
@@ -42,7 +41,7 @@ class AtoAwcUtil
     float averageSinceReset(String type,float total,float val);
     void setAtoRunning(bool val);
     bool getAtoRunning();
-    NTPClient*  getTc();
+//    NTPClient*  getTc();
     //AsyncWebServer getServer();
     String changeMonthNubToStr(int thisMonth);
     String changeMonthStrToNum(String thisMonth);
@@ -58,12 +57,14 @@ class AtoAwcUtil
     void setUtcOffsetInSec(int offset);
     void setCalibrating(bool cal);
     int* getCurrentTimeArray();
+    void clearSpiffs();
+    void listAllFiles();
     
     
     
   private:
-    //AsyncWebServer *_server;
-    NTPClient *_timeClient;
+    AsyncWebServer *_server;
+//    NTPClient *_timeClient;
     WiFiUDP ntpUDP;
     WiFiClient client;
     Datetime* _datetime;
@@ -88,7 +89,6 @@ class AtoAwcUtil
     int *curTimeArr;
     int currentTimeArrMinusOneMin[5];// buffer for minute time
     int currentTimeArrPlusOneMin[5];//buffer for minute timer
-    void static recvMsg(uint8_t *data, size_t len);
     int blueStart = 0;
     int blueStop = 0;
     int greenStart = 0;
@@ -105,6 +105,8 @@ class AtoAwcUtil
     String daileybdFill = "";
     String daileygdFill = "";
     String daileyydFill = "";
+    const char* ssid = "RoodRouter";
+    const char* password = "";
 
 
 };    
